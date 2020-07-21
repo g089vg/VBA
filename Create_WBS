@@ -28,8 +28,8 @@ Sub Create_Management_Table()
     NUM_TaskStart = 3 + Top_Row - 1
     NUM_Member = 9
     '/*最終行列の設定*/
-    lastRow = 10 * NUM_Task
-    lastCol = 105 + 6
+    lastRow = Sheets("マスタ").Range("B3") * NUM_Task
+    lastCol = Sheets("マスタ").Range("B2") + 6    '*/6は適合定数/*
     
     lastRow = lastRow + NUM_TaskStart - 1
     
@@ -48,7 +48,6 @@ Sub Create_Management_Table()
    Range(Cells(Top_Row, NUM_DayStart - 1), Cells(Top_Row + 1, NUM_DayStart - 1)).Merge
     '/*項目箇所の背景を設定*/
     Range(Cells(Top_Row, 1), Cells(Top_Row + 1, lastCol)).Interior.Color = RGB(150, 200, 255)
-    'Range(Cells(Top_Row, 1), Cells(lastRow, 1)).Interior.Color = RGB(150, 205, 255)
     
     '/*固定セルを設定*/
     Cells(Top_Row + 2, NUM_DayStart - 1).Select
@@ -58,7 +57,7 @@ Sub Create_Management_Table()
     
     '/*1行目に日付，2行目に曜日を記入*/
     Dim Date_d As Date
-    Date_d = CDate("2020/7/13")
+    Date_d = CDate(Sheets("マスタ").Range("B1"))
     For LP_i = NUM_DayStart To lastCol
         Cells(Top_Row, LP_i) = DateAdd("d", LP_i - NUM_DayStart, Date_d)
         Cells(Top_Row, LP_i).NumberFormatLocal = "m/dd"
