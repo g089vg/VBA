@@ -1,0 +1,156 @@
+Option Explicit
+'*******************************************************
+'*          名称　  工数管理表作成                                               　      　  *
+'*          概要         -                                                                               *
+'*          引数         -                                                                               *
+'*          戻り値      -                                                                               *
+'*******************************************************
+Sub Create_Management_Table()
+    
+    '/*変数定義*/
+    Dim lastRow As Long
+    Dim lastCol As Long
+    Dim LP_i, LP_j, LP_k As Long
+    Dim NUM_DayStart As Long
+    Dim NUM_TaskStart As Long
+    Dim NUM_Task As Long
+    Dim temp1 As Long
+    Dim NUM_Member As Long
+    Dim Top_Row As Long
+                  
+   '/*1タスクの細分数の設定*/
+   NUM_Task = 20
+    '/*項目行の設定*/
+    Top_Row = 3
+    
+    '/*データ入力開始行の設定*/
+    NUM_DayStart = 8
+    NUM_TaskStart = 3 + Top_Row - 1
+    NUM_Member = 9
+    '/*最終行列の設定*/
+    lastRow = 10 * NUM_Task
+    lastCol = 105 + 6
+    
+    lastRow = lastRow + NUM_TaskStart - 1
+    
+    '/*初期化設定*/
+    Cells.ClearFormats
+    Cells.Clear
+    ActiveSheet.Cells.ClearOutline
+    Selection.Rows.ClearOutline
+   Cells.HorizontalAlignment = xlCenter
+   Range(Cells(1, 1), Cells(2, lastCol)).Font.Bold = True
+   Cells(Top_Row, 1) = "タスク名"
+   Cells(Top_Row, 2) = "開始/終了日"
+   Cells(Top_Row, NUM_DayStart - 1) = "合計工数"
+   Range(Cells(Top_Row, 1), Cells(Top_Row + 1, 1)).Merge
+   Range(Cells(Top_Row, 2), Cells(Top_Row + 1, NUM_DayStart - 2)).Merge
+   Range(Cells(Top_Row, NUM_DayStart - 1), Cells(Top_Row + 1, NUM_DayStart - 1)).Merge
+    '/*項目箇所の背景を設定*/
+    Range(Cells(Top_Row, 1), Cells(Top_Row + 1, lastCol)).Interior.Color = RGB(150, 200, 255)
+    'Range(Cells(Top_Row, 1), Cells(lastRow, 1)).Interior.Color = RGB(150, 205, 255)
+    
+    '/*固定セルを設定*/
+    Cells(Top_Row + 2, NUM_DayStart - 1).Select
+    ActiveWindow.FreezePanes = False
+    ActiveWindow.FreezePanes = True
+
+    
+    '/*1行目に日付，2行目に曜日を記入*/
+    Dim Date_d As Date
+    Date_d = CDate("2020/7/13")
+    For LP_i = NUM_DayStart To lastCol
+        Cells(Top_Row, LP_i) = DateAdd("d", LP_i - NUM_DayStart, Date_d)
+        Cells(Top_Row, LP_i).NumberFormatLocal = "m/dd"
+        Cells(Top_Row, LP_i).HorizontalAlignment = xlCenter
+        Cells(Top_Row + 1, LP_i) = WeekdayName(Weekday(Cells(Top_Row, LP_i)), True)
+    Next
+
+    '/*データのグループ化設定*/
+    With ActiveSheet.Outline
+        .AutomaticStyles = False
+        .SummaryRow = xlAbove    '// 行のグループ化マークの+/-を上側に付ける
+        .SummaryColumn = xlLeft  '// 列のグループ化マークの+/-を左側に付ける
+    End With
+    
+    temp1 = 0
+    '/*各行に実績と予定を記入し行を色付け*/
+    For LP_i = NUM_TaskStart To lastRow
+        If LP_i Mod 2 = 0 Then
+            Range(Cells(LP_i, 1), Cells(LP_i, lastCol)).Interior.Color = RGB(220, 255, 255)
+            Cells(LP_i, NUM_DayStart - 2) = "実績"
+            Cells(LP_i, NUM_DayStart - 6) = "開始実績"
+            Cells(LP_i, NUM_DayStart - 4) = "終了実績"
+            Range(Cells(LP_i, 1), Cells(LP_i - 1, 1)).Merge
+        Else
+            Range(Cells(LP_i, 1), Cells(LP_i, lastCol)).Interior.Color = RGB(210, 245, 245)
+            Cells(LP_i, NUM_DayStart - 2) = "予定"
+            Cells(LP_i, NUM_DayStart - 6) = "開始予定"
+            Cells(LP_i, NUM_DayStart - 4) = "終了予定"
+        End If
+       ' /*全行共通項目設定*/
+        Cells(LP_i, NUM_DayStart - 1).FormulaR1C1 = "=SUM(RC[1]:RC[" & (lastCol) & "])"
+
+        
+        '/*10タスクごとにグループ化し下位タスクを集計*/
+        If LP_i = NUM_TaskStart + temp1 * 20 Then
+            Cells(LP_i, 1) = "タスク"
+            temp1 = temp1 + 1
+            Range(Cells(LP_i + 2, 1), Cells(LP_i + 19, 1)).Rows.Group
+            For LP_j = NUM_DayStart To lastCol
+                Cells(LP_i, LP_j).FormulaR1C1 = "=SUMPRODUCT((MOD(ROW(R[1]C:R[" & NUM_Member * 2 & "]C),2)=1)*R[1]C:R[" & NUM_Member * 2 & "]C)"
+                Cells(LP_i + 1, LP_j).FormulaR1C1 = "=SUMPRODUCT((MOD(ROW(R[1]C:R[" & NUM_Member * 2 & "]C),2)=0)*R[1]C:R[" & NUM_Member * 2 & "]C)"
+            Next
+        End If
+
+    Next
+    
+     '/*土日の背景色を変更*/
+    For LP_i = NUM_DayStart To lastCol
+        If Cells(Top_Row + 1, LP_i) = "土" Or Cells(Top_Row + 1, LP_i) = "日" Then
+            Range(Cells(Top_Row + 2, LP_i), Cells(lastRow, LP_i)).Clear
+            Range(Cells(Top_Row, LP_i), Cells(lastRow, LP_i)).Interior.Color = RGB(200, 200, 200)
+
+        End If
+    Next
+    
+    '/*表の枠線を設定*/
+    Range(Cells(Top_Row, 1), Cells(lastRow, lastCol)).Borders.LineStyle = xlContinuous
+    Range(Cells(Top_Row, 1), Cells(lastRow, lastCol)).Borders.LineStyle = xlHairline
+    Range(Cells(Top_Row, 1), Cells(lastRow, lastCol)).BorderAround Weight:=xlMedium
+
+    Range("A4").AutoFilter 1
+    
+End Sub
+
+Sub create_WBS()
+    Dim lastCol As Long
+    Dim LP_i As Long
+    Dim ws As Worksheet
+    Dim ws_dst As Worksheet
+    
+    lastCol = 40
+    
+    For Each ws In Worksheets
+        If ws.Name = "WBS" Then
+            MsgBox "WBSはすでに存在します．"
+            End
+        End If
+    Next
+    Set ws_dst = Worksheets.Add
+    ws_dst.Name = "WBS"
+    
+    '/*1行目に日付，2行目に曜日を記入*/
+    Dim Date_d As Date
+    Date_d = CDate("2020/12/14")
+    For LP_i = 2 To lastCol
+        Cells(1, LP_i) = DateAdd("d", LP_i - 2, Date_d)
+        Cells(1, LP_i).NumberFormatLocal = "m/dd"
+        Cells(1, LP_i).HorizontalAlignment = xlCenter
+        Cells(2, LP_i) = WeekdayName(Weekday(Cells(1, LP_i)), True)
+    Next
+
+    
+    
+End Sub
+
