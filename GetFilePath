@@ -1,0 +1,40 @@
+Option Explicit
+
+'※以下プログラムコードは「Microsoft Forms 2.0 Object Library」を参照設定で追加すること
+'「C:\Windows\System32\FM20.DLL」または「C:\Windows\SysWOW64\FM20.DLL」
+
+Sub sample()
+
+'変数定義
+Dim wshNetwork As Object
+Dim wshCollection As Object
+Dim i As Long
+
+Dim Pname_tmp As String '一時変数
+Dim Pname As String
+
+Pname_tmp = ThisWorkbook.Path
+
+'ネットワークドライブ情報取得
+Set wshNetwork = CreateObject("WScript.Network")
+Set wshCollection = wshNetwork.EnumNetworkDrives
+
+
+'パス情報をネットワークドライブに合わせて変換
+For i = 0 To wshCollection.Count - 1 Step 2
+    If Left(Pname_tmp, 2) = wshCollection.Item(i) Then
+        Pname = wshCollection.Item(i + 1) & Mid(Pname_tmp, 3, Len(Pname_tmp))
+    
+    End If
+Next
+'オブジェクトの解放
+Set wshNetwork = Nothing
+Set wshCollection = Nothing
+
+'クリップボードに情報を送信
+With New MSForms.DataObject
+    .SetText Pname & vbLf & ActiveWorkbook.Name & "：シート「" & ActiveSheet.Name & "」"
+    .PutInClipboard
+End With
+
+End Sub
