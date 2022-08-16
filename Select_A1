@@ -1,0 +1,13 @@
+Sub Select_A1_Sheet()
+
+'変数定義
+Dim ws As Worksheet
+
+'全シートのA1を選択する
+For Each ws In Worksheets
+    ws.Activate
+    Range("A1").Select
+Next ws
+Sheets(1).Select
+
+End Sub
