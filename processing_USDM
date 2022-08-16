@@ -1,0 +1,42 @@
+Sub processing_USDM()
+
+Dim ws As Worksheet
+Dim last_r As Long
+Dim i As Long
+Dim COL As Long: COL = 4
+Dim tmp1 As Long
+Dim tmp2 As Long
+
+Set ws = ActiveSheet
+last_r = ws.Cells(Rows.Count, COL).End(xlUp).Row
+
+For i = 2 To last_r
+    '定数部分を太字書式に設定
+    If ws.Cells(i, COL) Like "*【C_*】*" Then
+        
+        tmp1 = InStr(ws.Cells(i, COL), "【C_")
+        tmp2 = InStr(ws.Cells(i, COL), "】")
+        ws.Cells(i, COL).Characters(tmp1, tmp2 - tmp1).Font.Bold = True '太字にする
+    End If
+    'あいまい表現に下線書式設定
+    If ws.Cells(i, COL) Like "*でない*" Then
+        
+        tmp1 = InStr(ws.Cells(i, COL), "でない")
+        ws.Cells(i, COL).Characters(tmp1, 3).Font.Underline = True
+    
+    End If
+    If ws.Cells(i, COL) Like "*何れか*" Then
+        
+        tmp1 = InStr(ws.Cells(i, COL), "何れか")
+        ws.Cells(i, COL).Characters(tmp1, 3).Font.Underline = True
+    
+    End If
+    If ws.Cells(i, COL) Like "*全て*" Then
+        
+        tmp1 = InStr(ws.Cells(i, COL), "全て")
+        ws.Cells(i, COL).Characters(tmp1, 2).Font.Underline = True
+    
+    End If
+Next
+
+End Sub
