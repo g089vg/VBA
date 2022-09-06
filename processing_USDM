@@ -1,9 +1,12 @@
-Sub processing_USDM()
+Sub Processing_USDM()
 
 Dim ws As Worksheet
 Dim last_r As Long
 Dim i As Long
-Dim COL As Long: COL = 4
+Dim j As Long
+Dim COL As Long: COL = 4 '対象の列
+Dim pos_tmp1 As Long
+Dim pos_tmp2 As Long
 Dim tmp1 As Long
 Dim tmp2 As Long
 
@@ -13,30 +16,83 @@ last_r = ws.Cells(Rows.Count, COL).End(xlUp).Row
 For i = 2 To last_r
     '定数部分を太字書式に設定
     If ws.Cells(i, COL) Like "*【C_*】*" Then
+        pos_tmp1 = 1
+        pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1
         
-        tmp1 = InStr(ws.Cells(i, COL), "【C_")
-        tmp2 = InStr(ws.Cells(i, COL), "】")
-        ws.Cells(i, COL).Characters(tmp1, tmp2 - tmp1).Font.Bold = True '太字にする
+        For j = 0 To Len(ws.Cells(i, COL).Value) / 5
+            tmp1 = InStr(Mid(ws.Cells(i, COL), pos_tmp1, pos_tmp2), "【C_")  '左から1番目の文字を検索(開始文字)
+            tmp2 = InStr(Mid(ws.Cells(i, COL), pos_tmp1, pos_tmp2), "】")    '左から1番目の文字を検索(終端文字)
+            
+            If tmp1 = 0 Or tmp2 = 0 Then
+              Exit For
+            Else
+                ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, tmp2 - tmp1 + 1).Font.Bold = True '太字にする
+            End If
+            pos_tmp1 = pos_tmp1 + tmp2                            '検索開始位置を更新
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+
+            
+        Next
     End If
+            
+
+    
     'あいまい表現に下線書式設定
-    If ws.Cells(i, COL) Like "*でない*" Then
-        
-        tmp1 = InStr(ws.Cells(i, COL), "でない")
-        ws.Cells(i, COL).Characters(tmp1, 3).Font.Underline = True
     
+    If ws.Cells(i, COL) Like "*でない*" Then '「でない」を強調
+        tmp1 = 0
+        pos_tmp1 = 1
+        pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1
+        For j = 0 To Len(ws.Cells(i, COL).Value) / 3
+            
+            tmp1 = InStr(Mid(ws.Cells(i, COL), pos_tmp1, pos_tmp2), "でない")
+            If tmp1 = 0 Then
+               Exit For
+            Else
+                ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, 3).Font.Underline = True
+            End If
+            pos_tmp1 = pos_tmp1 + 3
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            
+        Next
     End If
-    If ws.Cells(i, COL) Like "*何れか*" Then
-        
-        tmp1 = InStr(ws.Cells(i, COL), "何れか")
-        ws.Cells(i, COL).Characters(tmp1, 3).Font.Underline = True
     
+    If ws.Cells(i, COL) Like "*何れか*" Then '「何れか」を強調
+        tmp1 = 0
+        pos_tmp1 = 1
+        pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1
+        For j = 0 To Len(ws.Cells(i, COL).Value) / 3
+            
+            tmp1 = InStr(Mid(ws.Cells(i, COL), pos_tmp1, pos_tmp2), "何れか")
+            If tmp1 = 0 Then
+               Exit For
+            Else
+                ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, 3).Font.Underline = True
+            End If
+            pos_tmp1 = pos_tmp1 + 3
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            
+        Next
     End If
-    If ws.Cells(i, COL) Like "*全て*" Then
-        
-        tmp1 = InStr(ws.Cells(i, COL), "全て")
-        ws.Cells(i, COL).Characters(tmp1, 2).Font.Underline = True
     
+    If ws.Cells(i, COL) Like "*全て*" Then '「全て」を強調
+        tmp1 = 0
+        pos_tmp1 = 1
+        pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1
+        For j = 0 To Len(ws.Cells(i, COL).Value) / 3
+            
+            tmp1 = InStr(Mid(ws.Cells(i, COL), pos_tmp1, pos_tmp2), "全て")
+            If tmp1 = 0 Then
+               Exit For
+            Else
+                ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, 3).Font.Underline = True
+            End If
+            pos_tmp1 = pos_tmp1 + 3
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            
+        Next
     End If
 Next
 
 End Sub
+
