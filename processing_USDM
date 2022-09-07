@@ -9,11 +9,12 @@ Dim pos_tmp1 As Long
 Dim pos_tmp2 As Long
 Dim tmp1 As Long
 Dim tmp2 As Long
-
+Dim data_name As String
 Set ws = ActiveSheet
 last_r = ws.Cells(Rows.Count, COL).End(xlUp).Row
 
 For i = 2 To last_r
+    
     '定数部分を太字書式に設定
     If ws.Cells(i, COL) Like "*【C_*】*" Then
         pos_tmp1 = 1
@@ -29,13 +30,38 @@ For i = 2 To last_r
                 ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, tmp2 - tmp1 + 1).Font.Bold = True '太字にする
             End If
             pos_tmp1 = pos_tmp1 + tmp2                            '検索開始位置を更新
-            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 + 1 '検索文字数を更新
 
             
         Next
     End If
             
+    'データ名表記文字を色付け
+    If ws.Cells(i, COL) Like "*'*'*" Then
+        pos_tmp1 = 1
+        pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1
+        
+        For j = 0 To Len(ws.Cells(i, COL).Value) / 5
+            tmp1 = InStr(Mid(ws.Cells(i, COL), pos_tmp1, pos_tmp2), "'")  '左から1番目の文字を検索(開始文字)
+            tmp2 = InStr(Mid(ws.Cells(i, COL), pos_tmp1 + tmp1, pos_tmp2 - tmp1), "'")  '左から1番目の文字を検索(終端文字)
+            
+            If tmp1 = 0 Or tmp2 = 0 Then
+              data_name = ""
+              Exit For
+            Else
+                data_name = CStr(Mid(ws.Cells(i, COL).Value, pos_tmp1 + tmp1, tmp2 - 1))
+                If Serch_IF_Data(data_name) Then
+                    ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, tmp2 + 1).Font.Color = RGB(0, 255, 255)  '入出力にあるとき葵色に変える
+                Else
+                    ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, tmp2 + 1).Font.Color = RGB(255, 102, 255)  '入出力にないときピンク色に変える
+                End If
+            End If
+            pos_tmp1 = pos_tmp1 + tmp1 + tmp2                            '検索開始位置を更新
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 + 1 '検索文字数を更新
 
+            
+        Next
+    End If
     
     'あいまい表現に下線書式設定
     
@@ -51,8 +77,8 @@ For i = 2 To last_r
             Else
                 ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, 3).Font.Underline = True
             End If
-            pos_tmp1 = pos_tmp1 + 3
-            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            pos_tmp1 = pos_tmp1 + tmp1 + 2
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 + 1 '検索文字数を更新
             
         Next
     End If
@@ -69,8 +95,8 @@ For i = 2 To last_r
             Else
                 ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, 3).Font.Underline = True
             End If
-            pos_tmp1 = pos_tmp1 + 3
-            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            pos_tmp1 = pos_tmp1 + tmp1 + 2
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 + 1 '検索文字数を更新
             
         Next
     End If
@@ -87,8 +113,8 @@ For i = 2 To last_r
             Else
                 ws.Cells(i, COL).Characters(pos_tmp1 - 1 + tmp1, 3).Font.Underline = True
             End If
-            pos_tmp1 = pos_tmp1 + 3
-            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 - 1 '検索文字数を更新
+            pos_tmp1 = pos_tmp1 + tmp1 + 2
+            pos_tmp2 = Len(ws.Cells(i, COL).Value) - pos_tmp1 + 1 '検索文字数を更新
             
         Next
     End If
@@ -96,3 +122,24 @@ Next
 
 End Sub
 
+Private Function Serch_IF_Data(ByVal name As String) As Boolean
+    Dim ws As Worksheet
+    Dim last_row As Long
+    Dim k As Long
+    Dim COL_DEF As Long: COL_DEF = 4 'データ定義列
+    Set ws = ActiveWorkbook.Worksheets("入出力表")
+    Serch_IF_Data = False
+    last_row = Gen_Fin_Pos(ws, COL_DEF, "ROW")
+    
+    'MsgBox name
+    '入出力表に存在するか確認
+    For k = 1 To last_row
+        If name = CStr(ws.Cells(k, COL_DEF).Value) Then
+            ws.Cells(k, COL_DEF + 6) = "USDMに記載あり"
+            Serch_IF_Data = True
+            Exit For
+        End If
+    Next
+
+
+End Function
